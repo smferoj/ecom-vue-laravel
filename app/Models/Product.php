@@ -31,6 +31,17 @@ class Product extends Model
             ->generateSlugsFrom('title')
             ->saveSlugsTo('slug');
     }
+
+    function product_images(){
+        return $this->hasMany(Product_image::class);
+    }
+
+    function category(){
+        return $this->belongsTo(Category::class);
+    }
+    function brand(){
+        return $this->belongsTo(Brand::class);
+    }
 }
 
 
