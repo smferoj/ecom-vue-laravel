@@ -2,9 +2,9 @@
  import { router, usePage } from '@inertiajs/vue3';
  import {ref} from 'vue'
 
- defineProps({
-    products: Array
-})
+//  defineProps({
+//     products: Array
+// })
 
  const products = usePage().props.products;
  const brands = usePage().props.brands;
@@ -15,11 +15,24 @@
  const editMode = ref(false);
  const dialogVisible = ref(false)
 
-//  const productIamges = ref([])
+// upload multiple images
+const productImages = ref([])
+const dialogImageUrl = ref('')
 
+const handleFileChange =(file)=>{
+    productImages.value.push(file)
+}
+
+const handlePictureCardPreview = (file) => {
+  dialogImageUrl.value = file.url
+  dialogVisible.value = true
+}
+
+const handleRemove=(file) => {
+  console.log(file)
+}
 
  // product form data 
-
  const id = ref('');
  const title = ref('');
  const price = ref('');
@@ -32,6 +45,8 @@
  const instock = ref('');
 
 //  end product form data 
+
+
 
  // open add modal 
  const openAddModal=()=>{
@@ -51,12 +66,10 @@ const AddProduct = async() =>{
     formData.append('description', description.value);
     formData.append('brand_id', brand_id.value);
     formData.append('category_id', category_id.value);
-  
-
     // Append product images
-    // for(const image of productIamges.value){
-    //     formData.append('product_images[]', image.raw);
-    // }
+    for(const image of productImages.value){
+        formData.append('product_images[]', image.raw);
+    }
 
     try{
       await router.post('products/store', formData, {
@@ -76,8 +89,6 @@ const AddProduct = async() =>{
         console.log(err)
     } 
 }
-
-
 
 
 
@@ -157,7 +168,7 @@ const AddProduct = async() =>{
         </select>
     </div>
 
-              
+              <!--Description  -->
 
     <div class="grid  md:gap-6">
         <div class="relative z-0 w-full mb-6 group">
@@ -167,10 +178,24 @@ const AddProduct = async() =>{
             <textarea id="message" rows="4" v-model="description"
                 class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="Leave a comment..."></textarea>
-
         </div>
-
     </div>
+
+    <!-- multiple images upload -->
+
+    <div class="grid  md:gap-6">
+    <div class="relative z-0 w-full mb-6 group">
+
+        <el-upload v-model:file-list="productImages" class="avatar-uploader"
+            list-type="picture-card" multiple :on-preview="handlePictureCardPreview" :on-remove="handleRemove" :on-change="handleFileChange">
+            <img v-if="imageUrl" :src="imageUrl" class="avatar" />
+            <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+        </el-upload>
+
+</div>
+</div>
+
+
     <button type="submit"class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
    </form>
 </el-dialog>
@@ -274,12 +299,23 @@ const AddProduct = async() =>{
                         <tbody>
                             <tr v-for="product in products" :key="product.id" class="border-b dark:border-gray-700">
                                 <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ product.title }}</th>
-                                <td class="px-4 py-3">{{ product.category_id }}</td>
-                                <td class="px-4 py-3">{{ product.brand_id }}</td>
+                                <td class="px-4 py-3">{{ product.category.name }}</td>
+                                <td class="px-4 py-3">{{ product.brand.name }}</td>
                                 <td class="px-4 py-3">{{ product.quantity }}</td>
                                 <td class="px-4 py-3">{{ product.price }}</td>
-                                <td class="px-4 py-3">{{ product.instock }}</td>
-                                <td class="px-4 py-3">{{ product.published}}</td>
+                             
+                                <td class="px-4 py-3">
+                                    <button v-if="product.instock==1" type="button" class="bg-green-300 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">In Stock</button>
+                                    <button v-if="product.instock==0" type="button" class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">Out of Stock</button>
+
+                                </td>
+                                <td class="px-4 py-3">
+                                    <button v-if="product.published==1" type="button" class="bg-green-300 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">Published</button>
+                                    <button v-if="product.published==0" type="button" class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">Unpublished</button>
+
+                                </td>
+                               
+
                                 <td class="px-4 py-3 flex items-center justify-end">
                                     <button id="apple-imac-27-dropdown-button" data-dropdown-toggle="apple-imac-27-dropdown" class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100" type="button">
                                         <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
